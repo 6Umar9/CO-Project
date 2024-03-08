@@ -1,8 +1,6 @@
-add s1,s2,s3
-loop:sad s2,s3,s4
-add s1,s2,s3
-sad s2,s3,s4
-add s1,s2,s3
-exit:sad s2,s3,s4
-add s1,s2,s3
-sad s2,s3,s4
+addi a3,a6,-50
+sltiu a4,a4,2044
+loop:lw a3,30(s5)
+jalr a6,a1,-13
+exit:lw a5,-325(s2)
+sw ra,32(sp)
