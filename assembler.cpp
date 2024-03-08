@@ -78,14 +78,14 @@ int main() {
     // cout << opcode << "|| ";
     vector<string> arguementsplit =
         split(instructionsplit[1], ','); // split for the rest of the arguements
-    cout << endl;
 
     ++lineno;
     programcounter += 0x00000004;
   }
-  int x;
-  cin >> x;
-  string s = std::bitset<12>(x).to_string();
-  cout << s << endl;
-  cout << fetchregister("e3") << endl;
+}
+int x;
+cin >> x;
+string s = std::bitset<12>(x).to_string();
+cout << s << endl;
+cout << fetchregister("e3") << endl;
 }
