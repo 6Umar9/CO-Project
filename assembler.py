@@ -1,5 +1,5 @@
 
-def binconverter( number, width):
+def binconverter( number, width): #takes input as int and width which is number of bits the binary shouldbe 
         if -1*(2**(width-1))<=number<(2**(width-1)):
             ret=f'{number:032b}'
             ret=ret[32-width:]
@@ -34,7 +34,7 @@ def binconverter( number, width):
     #    return registerdict[s]
     #except KeyError:
     #    return -1
-registerdict={
+registerdict={ #dictionary with all register address
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011",
     "tp": "00100", "t0": "00101", "t1": "00110", "t2": "00111",
     "s0": "01000", "fp": "01000",
@@ -49,20 +49,20 @@ inputstream=open("input.txt","r")
 assembly=inputstream.read()
 assemblyinput=assembly.split('\n')
 
-counter=1
-programcounter=0x00000000
+counter=1 #counter for lines for error
+programcounter=0x00000000 #counter for PC
 
-labelmap={}
+labelmap={} #map which stores label with pc address
 
 assemblyinput.pop()
-for i,j in enumerate(assemblyinput):
+for i,j in enumerate(assemblyinput): #maps all the labels and removes them too
     if ':' in j:
         holder=j.split(':')
         labelmap[holder[0]]=programcounter
         programcounter+=0x00000004
         assemblyinput[i]=holder[1]
 programcounter=0x00000000
-for i in assemblyinput:
+for i in assemblyinput:#main processing of assembly lines
     instructionsplit=i.split()
     #if len(labelsplit)>1:
     #    labelmap[labelsplit[0]]=programcounter
@@ -72,16 +72,16 @@ for i in assemblyinput:
     opcode=instructionsplit[0]
     
     arguementsplit=instructionsplit[1].split(",")
-    match opcode:
+    match opcode: #match for the opcodes
         case "addi":
-            try:
+            try: #test for register to fit
                 a=registerdict[arguementsplit[0]]
                 b=registerdict[arguementsplit[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 break
             c=binconverter(int(arguementsplit[2]),12)
-            if c=='-1':
+            if c=='-1': #to check if output is -1 which signifies error
                 print(f'Immediate value out of range in line {counter}')
                 break
             print(f"0010011{a}000{b}{c}")
@@ -135,7 +135,8 @@ for i in assemblyinput:
                 print(f'Immediate value out of range in line {counter}')
                 break 
             print(f"0100011{c[:5]}010{b}{a}{c[5:]}")
-
+#all others are same i am not sure about output order of each line
+#keep all code for one line above increment in counters
     programcounter+=0x00000004
 
     counter+=1
