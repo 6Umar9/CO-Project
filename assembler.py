@@ -140,43 +140,7 @@ for i in assemblyinput:#main processing of assembly lines
     programcounter+=0x00000004
 
     counter+=1
-
-def int_to_bin(num):
-    if num == 0:
-        return '0'
-    elif num < 0:
-        return '-' + int_to_bin(-num)
-    else:
-        binary = ''
-        while num > 0:
-            binary = str(num % 2) + binary
-            num //= 2
-        return binary
-
-def bin_to_int(binary_str):
-    if binary_str[0] == '-':
-        return -int(binary_str[1:], 2)
-    else:
-        return int(binary_str, 2)
-
-def twos_complement(binary_str):
-    # Invert all the bits
-    inverted_bits = ''.join('1' if bit == '0' else '0' for bit in binary_str)
-    
-    # Add 1 to the inverted binary number
-    result = bin(int(inverted_bits, 2) + 1)[2:]
-    
-    # Ensure the result has the same length as the original binary string
-    if len(result) < len(binary_str):
-        result = '0' * (len(binary_str) - len(result)) + result
-    
-    return result 
-def sign_extend(binary_str, width):
-    sign_bit = binary_str[0]
-    extended_binary = sign_bit * (width - len(binary_str)) + binary_str
-    return extended_binary
-#RISC V R-Type
-
+#R-type instructions
 def r_type(string1):
     
     list1 = string1.split()
@@ -197,100 +161,40 @@ def r_type(string1):
         'or' : '0110011',
         'and' : '0110011'
     }
-    result=""
 
     if opcode == 'add':
-        rd=binconverter(bin_to_int(rs1)+bin_to_int(rs2),5)
         func3 = '000'
         func7='0000000'
     
     elif opcode == 'sub':
-        if rs1=='00000':
-            rd=twos_complement(rs2)
-        else:
-            rd=int_to_bin(bin_to_int(rs1)-bin_to_int(rs2))
         func3 = '000'
         func7='0100000'
 
     elif opcode == 'sll':
-        result_binary=""
-        shift_amount = int(rs2[-5:], 2)
-    
-   
-        shifted_result = rs1 << shift_amount
-    
-  
-        result_binary = bin(shifted_result & 0b11111)[2:]  
-    
-    
-        if len(result_binary) < 5:
-            result_binary = '0' * (5 - len(result_binary)) + result_binary
-        rd=result_binary
-
         func3 = '001'
         func7='0000000'
 
     elif opcode == 'slt':
-        if bin_to_int(rs1)<bin_to_int(rs2):
-            rd='00001'
-        else:
-            rd='00000'
         func3 = '010'
         func7='0000000'
 
     elif opcode == 'sltu':
-        if bin_to_int(rs1)<bin_to_int(rs2):
-            rd='00001'
-        else:
-            rd='00000'
         func3 = '011'
         func7='0000000'
 
     elif opcode == 'xor':
-        for i in range(len(rs1)):
-            if rs1[i] == rs2[i]:
-                result += "0"
-            else:
-                result += "1"
-        rd=result
         func3 = '100'
         func7='0000000'
 
     elif opcode == 'srl':
-        result_binary=""
-        shift_amount = int(rs2[-5:], 2)
-    
-
-        shifted_result = rs1 >> shift_amount
-    
-   
-        result_binary = bin(shifted_result & 0b11111)[2:] 
-    
-    
-        if len(result_binary) < 5:
-            result_binary = '0' * (5 - len(result_binary)) + result_binary
-        rd=result_binary
         func3 = '101'
         func7='0000000'
 
     elif opcode == 'or':
-        for i in range(len(rs1)):
-        
-            if rs1[i] == '1' or rs2[i] == '1':
-                result += "1"
-            else:
-                result += "0"
-        rd=result
         func3 = '110'
         func7='0000000'
 
     elif opcode == 'and':
-        for i in range(len(rs1)):
-            if rs1[i] == '1' and rs2[i] == '1':
-                result += "1"
-            else:
-                result += "0"
-        rd=result
         func3 = '111'
         func7='0000000'
 
