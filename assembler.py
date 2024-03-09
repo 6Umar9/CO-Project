@@ -140,6 +140,9 @@ for i in assemblyinput:#main processing of assembly lines
     programcounter+=0x00000004
 
     counter+=1
+
+
+
 #R-type instructions
 def r_type(string1):
     
