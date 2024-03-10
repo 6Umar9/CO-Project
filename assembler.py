@@ -37,7 +37,7 @@ def binconverter( number, width): #takes input as int and width which is number 
 registerdict={ #dictionary with all register address
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011",
     "tp": "00100", "t0": "00101", "t1": "00110", "t2": "00111",
-    "s0": "01000", "fp": "01000", #different names for same re
+    "s0": "01000", "fp": "01000", #different names for same register
     "s1": "01001", "a0": "01010", "a1": "01011", "a2": "01100",
     "a3": "01101", "a4": "01110", "a5": "01111", "a6": "10000",
     "a7": "10001", "s2": "10010", "s3": "10011", "s4": "10100",
