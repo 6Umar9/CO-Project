@@ -113,37 +113,92 @@ for i in assemblyinput: #main processing of assembly lines
         pass #case for bonus instructions when nothing follows rst or halt
 
     #some exta instructions that are usually given in RISC V
-    itypes=['addi','slti','sltiu','xori','ori','andi','slli','srli','srai']
-    codeitypes=["000","010","011","100","110","111","001","101","101"]
-
 
     if ins in supported_instructions:
         match ins:
             case "addi":
-                pass
-            case "slti":
-                pass
-            case "sltiu":
-                pass
-            case "xori":
-                pass
-            case "ori":
-                pass
-            case "andi":
-                pass
-            case "slli":
-                pass
-            case "srli":
-                pass
-            case "srai":
-                pass
-            case "lw":
-                pass
-            case "jalr":
-                pass
-            case "sw":
-                pass
+                result=process_1(registers)
+                if result:
+                    rd,rs,immi=result
+                print(f"{immi}{rs}000{rd}0010011") 
 
+            case "slti":
+                result=process_1(registers)
+                if result:
+                    rd,rs,immi=result
+                    
+                print(f"{immi}{rs}010{rd}0010011") 
+            case "sltiu":
+                result=process_1(registers)
+                if result:
+                    rd,rs,immi=result
+
+                print(f"{immi}{rs}011{rd}0010011") 
+            case "xori":
+                result=process_1(registers)
+                if result:
+                    rd,rs,immi=result
+
+                print(f"{immi}{rs}100{rd}0010011") 
+            case "ori":
+                result=process_1(registers)
+                if result:
+                    rd,rs,immi=result
+
+                print(f"{immi}{rs}110{rd}0010011") 
+            case "andi":
+                result=process_1(registers)
+                if result:
+                    rd,rs,immi=result
+
+                print(f"{immi}{rs}111{rd}0010011")
+            
+            # case "slli":
+            #     result=process_1(registers)
+            #     if result:
+            #         rd,rs,immi=result
+
+            #     print(f"{immi}{rs}001{rd}0010011") 
+                
+            # case "srli":
+            #     result=process_1(registers)
+            #     if result:
+            #         rd,rs,immi=result
+
+            #     print(f"{immi}{rs}101{rd}0010011") 
+                
+            # case "srai":
+            #     result=process_1(registers)
+            #     if result:
+            #         rd,rs,immi=result
+
+            #     print(f"{immi}{rs}101{rd}0010011")
+            # for slli, srli, srai the immediate are fixed as 0000000xxxxx, 0000000xxxxx, 0100000xxxxx because you can shift by only 0-31 positions on a 32 bit number (rs1(b))
+            
+            case "lw":
+                result=process_2(registers)
+                if result:
+                    rd,rs,immi=result
+
+                print(f"{immi}{rs}010{rd}0000011")
+
+            case "jalr":
+                result=process_1(registers)
+                if result:
+                    rd,rs,immi=result
+
+                print(f"{immi}{rs}000{rd}1100111")
+            case "sw":
+                result=process_2(registers)
+                if result:
+                    rs2,rs1,immi=result
+
+                immmi=immi[::-1]
+                print(f"{immi[11:4:-1]}{rs2}{rs1}010{c[4::-1]}0100011")
+
+
+        programcounter+=0x00000004
+        counter+=1
 
     else:
-        print(f"Instruction '{ins}' Not supported by this architecture.")
+        print(f"Instruction '{ins}' in line {counter} Not supported by this architecture.")
