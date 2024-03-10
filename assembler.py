@@ -50,7 +50,7 @@ inputstream=open("input.txt","r")
 assembly=inputstream.read()
 assemblyinput=assembly.split('\n')
 
-counter=1 #counter no used for erroe lines
+counter=1 #counter no used for error lines
 programcounter=0x00000000 # 8 bit counter for PC
 
 labelmap={} #map which stores label with pc address
