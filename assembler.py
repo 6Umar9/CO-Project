@@ -148,11 +148,14 @@ def r_type(string1):
     
     list1 = string1.split()
     opcode = list1[0]
-    rs1 = registerdict.get(list1[2])
-    rs2 = registerdict.get(list1[3])
-    rd = registerdict.get(list1[1])
+    reg=list1[1].split(',')
+    rd=registerdict.get(reg[0])
+    rs1=registerdict.get(reg[1])
+    rs2=registerdict.get(reg[2])    
+        
+        
 
-    ins = {
+    op_code = {
 
         'add' : '0110011',
         'sub' : '0110011',
@@ -204,7 +207,7 @@ def r_type(string1):
     else:
         raise ValueError(f"Invalid opcode for R-type instruction")
     
-    bin_str = func7+rs2+rs1+func3+rd+ins[opcode]
+    bin_str = func7+rs2+rs1+func3+rd+op_code[opcode]
     return bin_str
         
 #B-type Instructions
