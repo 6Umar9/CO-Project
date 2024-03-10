@@ -78,6 +78,44 @@ supported_instructions=["add","sub","sll","slt","sltu","xor","srl","sra","or","a
                         "mul","rst","halt","rvrs",
                         ]
 
+def process_1(registers):
+    try:
+        rd=registerdict[registers[0]]
+        rs=registerdict[registers[1]]
+    
+    except KeyError:
+        print(f"Register not found in line {counter}")
+        return None
+
+    except:
+        print("Unknown Error")
+        return None
+
+    immi=binconverter(int(registers[2]),12)
+
+    if immi=='-1': #to check if output is -1 which signifies error
+        print(f'Immediate value out of range in line {counter}')
+        return None
+    
+    return rd, rs, immi
+                
+def process_2(registers):
+    r1=registers[0]
+    ffs=registers[1].split('(')
+    r2=ffs[1][-1]
+    try:
+        rd=registerdict[r1]
+        rs=registerdict[r2] #removing ')' from register
+    except KeyError:
+        print(f"Register not found in line {counter}")
+        return
+    imm=binconverter(int(ffs[0]),12)
+
+    if imm=='-1':
+        print(f'Immediate value out of range in line {counter}')
+        return
+
+    return rd, rs, imm
 with open("input.txt","r") as inputstream:
         assembly=inputstream.read().lower()
         assemblyinput=assembly.splitlines() #there is no need to pop the last line as if it exists it is ignored in splitlines method.
