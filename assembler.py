@@ -48,24 +48,24 @@ registerdict={ #dictionary with all register address
 
 with open("input.txt","r") as inputstream:
         assembly=inputstream.read()
-        assemblyinput=assemply.splitlines() #there is no need to pop the last line as if it exists it is ignored in splitlines method.
+        assemblyinput=assembly.splitlines() #there is no need to pop the last line as if it exists it is ignored in splitlines method.
 
 
 counter=1 #counter no used for error lines
 programcounter=0x00000000 # 32 bit counter for PC
 
-labelmap={} #map which stores label with pc address
+labelmap={} #map which stores label with PC address
 
-for i,j in enumerate(assemblyinput): #maps all the labels and removes them too
-    if ':' in j:
-        holder=j.split(':')
+for ind,ins in enumerate(assemblyinput): #maps all the labels and removes them too
+    if ':' in ins:
+        holder=ins.split(':')
         labelmap[holder[0]]=programcounter
-        programcounter+=0x00000004
-        assemblyinput[i]=holder[1]
+        assemblyinput[ind]=holder[1]
+    programcounter+=0x00000004
             
-programcounter=0x00000000
+programcounter=0x00000000 #resetting the program counter again
 
-for i in assemblyinput:#main processing of assembly lines
+for i in assemblyinput: #main processing of assembly lines
     instructionsplit=i.split()
     #if len(labelsplit)>1:
     #    labelmap[labelsplit[0]]=programcounter
@@ -74,36 +74,36 @@ for i in assemblyinput:#main processing of assembly lines
     #    instructionsplit=labelsplit[0].split()
     opcode=instructionsplit[0]
     
-    arguementsplit=instructionsplit[1].split(",")
+    registers=instructionsplit[1].split(",")
     match opcode: #match for the opcodes
         case "addi":
             try: #test for register to fit
-                a=registerdict[arguementsplit[0]]
-                b=registerdict[arguementsplit[1]]
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 break
-            c=binconverter(int(arguementsplit[2]),12)
+            c=binconverter(int(registers[2]),12)
             if c=='-1': #to check if output is -1 which signifies error
                 print(f'Immediate value out of range in line {counter}')
                 break
             print(f"0010011{a}000{b}{c}")
         case "sltiu":
             try:
-                a=registerdict[arguementsplit[0]]
-                b=registerdict[arguementsplit[1]]
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 break
-            c=binconverter(int(arguementsplit[2]),12)
+            c=binconverter(int(registers[2]),12)
             if c=='-1':
                 print(f'Immediate value out of range in line {counter}')
                 break
             print(f"0010011{a}011{b}{c}")
         case "lw":
-            ffs=arguementsplit[1].split('(')
+            ffs=registers[1].split('(')
             try:
-                a=registerdict[arguementsplit[0]]
+                a=registerdict[registers[0]]
                 b=registerdict[ffs[1][:-1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
@@ -115,20 +115,20 @@ for i in assemblyinput:#main processing of assembly lines
             print(f"0000011{a}010{b}{c}")
         case "jalr":
             try:
-                a=registerdict[arguementsplit[0]]
-                b=registerdict[arguementsplit[1]]
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 break
-            c=binconverter(int(arguementsplit[2]),12)
+            c=binconverter(int(registers[2]),12)
             if c=='-1':
                 print(f'Immediate value out of range in line {counter}')
                 break
             print(f"1110011{a}000{b}{c}")
         case "sw":
-            ffs=arguementsplit[1].split('(')
+            ffs=registers[1].split('(')
             try:
-                a=registerdict[arguementsplit[0]]
+                a=registerdict[registers[0]]
                 b=registerdict[ffs[1][:-1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
@@ -219,7 +219,7 @@ def b_type(string1):
     
     linesplit = string1.split() #seperating Opcode and the registers/immediates
     opcode = linesplit[0] #opcode assigned
-    arguementsplit = linesplit[1].split(',') #spliting the registers and immediates
+    registers = linesplit[1].split(',') #spliting the registers and immediates
 
     registerdict={ #dictionary with all register address
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011",
@@ -236,13 +236,13 @@ def b_type(string1):
 
         case "beq":
             try: #test for register to fit for B-Type instructions
-                a=registerdict[arguementsplit[1]]
-                b=registerdict[arguementsplit[2]]
+                a=registerdict[registers[1]]
+                b=registerdict[registers[2]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 #break #implement it in the for loop later on
-            c=binconverter(int(arguementsplit[0]),5) #converting immediate to binary
-            d = binconverter(int(arguementsplit[3]),8)
+            c=binconverter(int(registers[0]),5) #converting immediate to binary
+            d = binconverter(int(registers[3]),8)
             if c=='-1' or d == '-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
                 #break
@@ -250,13 +250,13 @@ def b_type(string1):
 
         case "bne":
             try:
-                a = registerdict[arguementsplit[1]]
-                b = registerdict[arguementsplit[2]]
+                a = registerdict[registers[1]]
+                b = registerdict[registers[2]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 #break
-            c = binconverter(int(arguementsplit[0]),5)
-            d = binconverter(int(arguementsplit[3]),8)
+            c = binconverter(int(registers[0]),5)
+            d = binconverter(int(registers[3]),8)
             if c == '-1' or d == '-1':
                 print(f"Immediate value out of range in line{counter}")
                 #break
@@ -264,13 +264,13 @@ def b_type(string1):
 
         case "blt":
             try:
-                a = registerdict[arguementsplit[1]]
-                b = registerdict[arguementsplit[2]]
+                a = registerdict[registers[1]]
+                b = registerdict[registers[2]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 #break
-            c = binconverter(int(arguementsplit[0]),5)
-            d = binconverter(int(arguementsplit[3]),8)
+            c = binconverter(int(registers[0]),5)
+            d = binconverter(int(registers[3]),8)
             if c == '-1' or d == '-1':
                 print(f"Immediate value out of range in line{counter}")
                 #break
@@ -278,13 +278,13 @@ def b_type(string1):
 
         case "bge":
             try:
-                a = registerdict[arguementsplit[1]]
-                b = registerdict[arguementsplit[2]]
+                a = registerdict[registers[1]]
+                b = registerdict[registers[2]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 #break
-            c = binconverter(int(arguementsplit[0]),5)
-            d = binconverter(int(arguementsplit[3]),8)
+            c = binconverter(int(registers[0]),5)
+            d = binconverter(int(registers[3]),8)
             if c == '-1' or d == '-1':
                 print(f"Immediate value out of range in line{counter}")
                 #break
@@ -292,13 +292,13 @@ def b_type(string1):
 
         case "bltu":
             try:
-                a = registerdict[arguementsplit[1]]
-                b = registerdict[arguementsplit[2]]
+                a = registerdict[registers[1]]
+                b = registerdict[registers[2]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 #break
-            c = binconverter(int(arguementsplit[0]),5)
-            d = binconverter(int(arguementsplit[3]),8)
+            c = binconverter(int(registers[0]),5)
+            d = binconverter(int(registers[3]),8)
             if c == '-1' or d == '-1':
                 print(f"Immediate value out of range in line{counter}")
                 #break
@@ -306,17 +306,17 @@ def b_type(string1):
         
         case "bgeu":
             try:
-                a = registerdict[arguementsplit[1]]
-                b = registerdict[arguementsplit[2]]
+                a = registerdict[registers[1]]
+                b = registerdict[registers[2]]
             except KeyError:
                 print(f"Register not found in line {counter}")
                 #break
-            c = binconverter(int(arguementsplit[0]),5)
-            d = binconverter(int(arguementsplit[3]),8)
+            c = binconverter(int(registers[0]),5)
+            d = binconverter(int(registers[3]),8)
             if c == '-1' or d == '-1':
                 print(f"Immediate value out of range in line{counter}")
                 #break
             print(f"1100011{c}111{a}{b}{d}")
-    #programcounter+= int(arguementsplit[]) #figuring this out still
+    #programcounter+= int(registers[]) #figuring this out still
         
     counter += 1;
