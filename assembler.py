@@ -46,16 +46,16 @@ registerdict={ #dictionary with all register address
     "t4": "11101", "t5": "11110", "t6": "11111"
 }
 
-inputstream=open("input.txt","r")
-assembly=inputstream.read()
-assemblyinput=assembly.split('\n')
+with open("input.txt","r") as inputstream:
+        assembly=inputstream.read()
+        assemblyinput=assemply.splitlines() #there is no need to pop the last line as if it exists it is ignored in splitlines method.
+
 
 counter=1 #counter no used for error lines
-programcounter=0x00000000 # 8 bit counter for PC
+programcounter=0x00000000 # 32 bit counter for PC
 
 labelmap={} #map which stores label with pc address
 
-assemblyinput.pop()
 for i,j in enumerate(assemblyinput): #maps all the labels and removes them too
     if ':' in j:
         holder=j.split(':')
