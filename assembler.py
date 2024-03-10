@@ -18,6 +18,44 @@ def binconverter( number, width): #takes input as int and width which is number 
         else:
             return '-1'
 
+def sign_extension(no,bits):
+    no=str(no)
+    l=len(no)
+    if bits>l:
+        no=no[0]*(bits-l)+no
+    elif bits==l:
+        pass
+    else:
+        pass
+        #not enough bits
+        # no=no[l-bits:]
+    
+    return no
+
+def twos_compliment(no):
+    no=str(no)
+    l=len(no)
+    if no[0]=='1':
+        no='0'+no
+        l+=1
+    compli=2**(l)-1-int(no,base=2)+1
+    compli_bin=bin(compli)[2:]
+    return compli_bin
+
+# print(twos_compliment(110))
+
+def bin_converter(no,width=32):
+    if -1*(2**(width-1))<=no<2**(width-1):
+        if no>=0:
+            ret="0"+bin(no)[2:]
+            return sign_extension(ret,width)
+        else:
+            no*=-1
+            compli=twos_compliment(bin(no)[2:])
+            return sign_extension(compli,width)
+            
+    else:
+        return -1
 
 registerdict={ #dictionary with all register address
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011",
@@ -195,7 +233,7 @@ def r_type(string1):
         
 #B-type Instructions
 def b_type(string1):
-    
+
     linesplit = string1.split() #seperating Opcode and the registers/immediates
     opcode = linesplit[0] #opcode assigned
     registers = linesplit[1].split(',') #spliting the registers and immediates
@@ -204,87 +242,109 @@ def b_type(string1):
 
         case "beq":
             try: #test for register to fit for B-Type instructions
-                a=registerdict[registers[1]]
-                b=registerdict[registers[2]]
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
-                #break #implement it in the for loop later on
-            c=binconverter(int(registers[0]),5) #converting immediate to binary
-            d = binconverter(int(registers[3]),8)
-            if c=='-1' or d == '-1': #to check if output is -1 which signifies error as mentioned above
+                return
+            
+            c=binconverter(int(registers[2]),12) #converting immediate to binary
+
+            if c=='-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
-                #break
-            print(f"1100011{c}000{a}{b}{d}")
+                return
+            
+            c=c[::-1]
+            print(f"{c[12]}{c[10:5-1:-1]}{b}{a}000{c[4::-1]}1100011")
 
         case "bne":
-            try:
-                a = registerdict[registers[1]]
-                b = registerdict[registers[2]]
+            try: #test for register to fit for B-Type instructions
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
-                #break
-            c = binconverter(int(registers[0]),5)
-            d = binconverter(int(registers[3]),8)
-            if c == '-1' or d == '-1':
-                print(f"Immediate value out of range in line{counter}")
-                #break
-            print(f"1100011{c}001{a}{b}{d}")
+                return
+            
+            c=binconverter(int(registers[2]),12) #converting immediate to binary
+
+            if c=='-1': #to check if output is -1 which signifies error as mentioned above
+                print(f'Immediate value out of range in line {counter}')
+                return
+            
+            c=c[::-1]
+            print(f"{c[12]}{c[10:5-1:-1]}{b}{a}001{c[4::-1]}1100011")
 
         case "blt":
-            try:
-                a = registerdict[registers[1]]
-                b = registerdict[registers[2]]
+            try: #test for register to fit for B-Type instructions
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
-                #break
-            c = binconverter(int(registers[0]),5)
-            d = binconverter(int(registers[3]),8)
-            if c == '-1' or d == '-1':
-                print(f"Immediate value out of range in line{counter}")
-                #break
-            print(f"1100011{c}100{a}{b}{d}")
+                return
+            
+            c=binconverter(int(registers[2]),12) #converting immediate to binary
+
+            if c=='-1': #to check if output is -1 which signifies error as mentioned above
+                print(f'Immediate value out of range in line {counter}')
+                return
+            
+            c=c[::-1]
+            print(f"{c[12]}{c[10:5-1:-1]}{b}{a}100{c[4::-1]}1100011")
+
 
         case "bge":
-            try:
-                a = registerdict[registers[1]]
-                b = registerdict[registers[2]]
+            try: #test for register to fit for B-Type instructions
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
-                #break
-            c = binconverter(int(registers[0]),5)
-            d = binconverter(int(registers[3]),8)
-            if c == '-1' or d == '-1':
-                print(f"Immediate value out of range in line{counter}")
-                #break
-            print(f"1100011{c}101{a}{b}{d}")
+                return
+            
+            c=binconverter(int(registers[2]),12) #converting immediate to binary
+
+            if c=='-1': #to check if output is -1 which signifies error as mentioned above
+                print(f'Immediate value out of range in line {counter}')
+                return
+            
+            c=c[::-1]
+            print(f"{c[12]}{c[10:5-1:-1]}{b}{a}101{c[4::-1]}1100011")
+
 
         case "bltu":
-            try:
-                a = registerdict[registers[1]]
-                b = registerdict[registers[2]]
+            try: #test for register to fit for B-Type instructions
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
-                #break
-            c = binconverter(int(registers[0]),5)
-            d = binconverter(int(registers[3]),8)
-            if c == '-1' or d == '-1':
-                print(f"Immediate value out of range in line{counter}")
-                #break
-            print(f"1100011{c}110{a}{b}{d}")
+                return
+            
+            c=binconverter(int(registers[2]),12) #converting immediate to binary
+
+            if c=='-1': #to check if output is -1 which signifies error as mentioned above
+                print(f'Immediate value out of range in line {counter}')
+                return
+            
+            c=c[::-1]
+            print(f"{c[12]}{c[10:5-1:-1]}{b}{a}110{c[4::-1]}1100011")
+
         
         case "bgeu":
-            try:
-                a = registerdict[registers[1]]
-                b = registerdict[registers[2]]
+            try: #test for register to fit for B-Type instructions
+                a=registerdict[registers[0]]
+                b=registerdict[registers[1]]
             except KeyError:
                 print(f"Register not found in line {counter}")
-                #break
-            c = binconverter(int(registers[0]),5)
-            d = binconverter(int(registers[3]),8)
-            if c == '-1' or d == '-1':
-                print(f"Immediate value out of range in line{counter}")
-                #break
-            print(f"1100011{c}111{a}{b}{d}")
+                return
+            
+            c=binconverter(int(registers[2]),12) #converting immediate to binary
+
+            if c=='-1': #to check if output is -1 which signifies error as mentioned above
+                print(f'Immediate value out of range in line {counter}')
+                return
+            
+            c=c[::-1]
+            print(f"{c[12]}{c[10:5-1:-1]}{b}{a}111{c[4::-1]}1100011")
+
     #programcounter+= int(registers[]) #figuring this out still
         
     counter += 1
