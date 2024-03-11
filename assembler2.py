@@ -163,8 +163,8 @@ def b_type(string1):
             except KeyError:
                 print(f"Register not found in line {counter}")
                 return
-            
-            c=binconverter(int(registers[2]),12) #converting immediate to binary
+            check = imm_or_label(registers[2])
+            c=binconverter(check,12) #converting immediate to binary
 
             if c=='-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
@@ -182,7 +182,8 @@ def b_type(string1):
                 print(f"Register not found in line {counter}")
                 return
             
-            c=binconverter(int(registers[2]),12) #converting immediate to binary
+            check = imm_or_label(registers[2])
+            c=binconverter(check,12) #converting immediate to binary
 
             if c=='-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
@@ -199,7 +200,8 @@ def b_type(string1):
                 print(f"Register not found in line {counter}")
                 return
             
-            c=binconverter(int(registers[2]),12) #converting immediate to binary
+            check = imm_or_label(registers[2])
+            c=binconverter(check,12) #converting immediate to binary
 
             if c=='-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
@@ -218,7 +220,8 @@ def b_type(string1):
                 print(f"Register not found in line {counter}")
                 return
             
-            c=binconverter(int(registers[2]),12) #converting immediate to binary
+            check = imm_or_label(registers[2])
+            c=binconverter(check,12) #converting immediate to binary
 
             if c=='-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
@@ -237,7 +240,8 @@ def b_type(string1):
                 print(f"Register not found in line {counter}")
                 return
             
-            c=binconverter(int(registers[2]),12) #converting immediate to binary
+            check = imm_or_label(registers[2])
+            c=binconverter(check,12) #converting immediate to binary
 
             if c=='-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
@@ -256,7 +260,8 @@ def b_type(string1):
                 print(f"Register not found in line {counter}")
                 return
             
-            c=binconverter(int(registers[2]),12) #converting immediate to binary
+            check = imm_or_label(registers[2])
+            c=binconverter(check,12) #converting immediate to binary
 
             if c=='-1': #to check if output is -1 which signifies error as mentioned above
                 print(f'Immediate value out of range in line {counter}')
