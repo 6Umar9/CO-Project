@@ -20,11 +20,11 @@
 
 The Assembler is based on the `RISC V32I` system.
 
-The above directory contains the key assembler that was finalised and approved by the group. It translates the `Assembly language` input to `Binary` and allows us to check the relevance of test cases.
-
-The labels as well as the immediates were taken into account and verified for each line. The Assembler follows the project details and stops the processing as soon as it detects an invalid `opcode`, `register`, or out of bound `immediate` value.
+The above directory contains the key assembler that was finalised by the group. It translates the input in `Assembly language` to `Binary` and allows us to check the correctness of it by checking against test cases.
 
 It checks for the type of instructions (`B-Type, R-Type and so on`), verifies if it is an **op-code** runs a check on the input and whether it is a register, immediate or label.
+
+The labels as well as the immediates were taken into account and verified for each line. The Assembler follows the project details and produces an error if it detects an invalid `opcode`, `register`, `label` or out of bound `immediate` value.
 
 This is done through the construction of *dictionaries* which contain all the registers, functions which check *labels* and *immediates*, and finally, *functions* which contains the instructions based on the *op-code*.
 
@@ -44,7 +44,7 @@ Each file contains a certain amount of code for the assembler, and how it was ma
 ## Misc.
 The PDF attached contains all the information on how a `RISC V32I` Assembler works and how the ouput is supposed to be.
 
-> The output format mentioned is the same that was followed while displaying the Assembler's output.
+> The format while displaying the Assembler's output is smae as the mentioned in the file.
 
 The `readme.txt` contains information on how the testing framework works, and how the assembler and simulator are to be built and differentiated.
 
