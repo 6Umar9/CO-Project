@@ -1,7 +1,11 @@
 import sys
 
-input_file = sys.argv[1]
-output_file = sys.argv[2]
+with open("/Users/teo/Desktop/CO Project/input.txt","r") as inputstream:
+    assembly=inputstream.read().lower()
+    assemblyinput=[line.strip() for line in assembly.splitlines() if line.strip()] #there is no need to pop the last line as if it exists it is ignored in splitlines method.
+
+
+output_file="/Users/teo/Desktop/CO Project/output.txt"
 wf=open(output_file,"w")
 wf.close()
 
@@ -11,7 +15,11 @@ def imm_or_label(given): #Function to check label or imm and return accordingly 
     try:
         return int(given)
     except ValueError:
-        return labelmap[given]-programcounter
+        try:
+            return -(labelmap[given]-programcounter)
+        except:
+            return "error"
+    
     
 
 def j_type(instruction):
@@ -34,6 +42,9 @@ def j_type(instruction):
         return
     
     imm=imm_or_label(args[1])
+    if imm=='error':
+        print(f"Illegal Label {args[1]}")
+        return
     imm=str(bin_converter(imm,21))
     if imm=="-1":
         print(f'Immediate value out of range in line {counter}')
@@ -160,6 +171,7 @@ def r_type(string1):
     wf.write(codeinstruction+'\n')
     wf.close()
 
+halt_instr="00000000000000000000000001100011"
 def b_type(string1):
 
     words = string1.split() #seperating Opcode and the registers/immediates
@@ -175,6 +187,9 @@ def b_type(string1):
         return
     
     immi = imm_or_label(registers[2])
+    if immi=="error":
+        print(f"Illegal label in {registers[2]}")
+        return
     immi=bin_converter(immi,13) #converting immediate to binary
 
     if immi=='-1': #to check if output is -1 which signifies error as mentioned above
@@ -203,9 +218,16 @@ def b_type(string1):
             funct3='111'
 
     codeinstruction=f"{immi[12]}{immi[10:5-1:-1]}{rs2}{rs1}{funct3}{immi[4:0:-1]}{immi[11]}{codeins}"
+
+    if codeinstruction == halt_instr and counter!=last_line:
+        print(f"Halt can't be in line {counter} where the last line is line {last_line}.")
+        return
+
+    elif codeinstruction!=halt_instr and counter==last_line:
+        print("Last instrcution not halt instruction.")
     print(codeinstruction)
 
-    wf.open(output_file,'a')
+    wf=open(output_file,'a')
     wf.write(codeinstruction+"\n")
     wf.close()
       
@@ -213,12 +235,13 @@ def i_type(instruction):
 
     words=instruction.split()
     ins=words[0]
-    registers=words[1]
+    registers=words[1].split(',')
 
     if ins in ['lw','sw']:
         r1=registers[0]
         ffs=registers[1].split('(')
-        r2=ffs[1][-1]
+
+        r2=ffs[1][:-1]
         try:
             rd=registerdict[r1]
             rs=registerdict[r2] #removing ')' from register
@@ -235,16 +258,16 @@ def i_type(instruction):
     
         match ins:
             case "lw":
-                codeinstruction=f"{immi}{rs}000{rd}1100111"
+                codeinstruction=f"{immi}{rs}010{rd}0000011"
                 print(codeinstruction)
-                wf.open(output_file,'a')
+                wf=open(output_file,'a')
                 wf.write(codeinstruction+"\n")
                 wf.close()
             case "sw":
                 immi=immi[::-1]
-                codeinstruction=f"{immi[11:4:-1]}{rd}{rs}010{c[4::-1]}0100011"
+                codeinstruction=f"{immi[11:4:-1]}{rd}{rs}010{immi[4::-1]}0100011"
                 print(codeinstruction)
-                wf.open(output_file,'a')
+                wf=open(output_file,'a')
                 wf.write(codeinstruction+"\n")
                 wf.close()
 
@@ -277,7 +300,7 @@ def i_type(instruction):
                 # for slli, srli, srai the immediate are fixed as 0000000xxxxx, 0000000xxxxx, 0100000xxxxx because you can shift by only 0-31 positions on a 32 bit number (rs1(b))
         codeinstruction=f"{immi}{rs}{funct3}{rd}{codeins}"
         print(codeinstruction)
-        wf.open(output_file,'a')
+        wf=open(output_file,'a')
         wf.write(codeinstruction+"\n")
         wf.close()
 
@@ -318,7 +341,7 @@ def bin_converter(no,width=32):
             return sign_extension(compli,width)
             
     else:
-        return -1
+        return "-1"
 
 registerdict={ #dictionary with all register address
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011",
@@ -332,12 +355,20 @@ registerdict={ #dictionary with all register address
     "t4": "11101", "t5": "11110", "t6": "11111"
 }
 
-with open(input_file,"r") as inputstream:
-        assembly=inputstream.read().lower()
-        assemblyinput=assembly.splitlines() #there is no need to pop the last line as if it exists it is ignored in splitlines method.
+supported_instructions=["add","sub","sll","slt","sltu","xor","srl","sra","or","and",
+                        'addi','slti','sltiu','xori','ori','andi','slli','srli','srai',"lw","jalr",
+                        "sw",
+                        "beq","bne","blt","bge","bltu","bgeu",
+                        "lui","auipc",
+                        "jal",
+                        "mul","rst","halt","rvrs",
+                        ]
 
 
 counter=1 #counter no used for error lines
+last_line=len(assemblyinput)
+
+
 programcounter=0x00000000 # 32 bit counter for PC
 
 labelmap={} #map which stores label with PC address
@@ -345,11 +376,15 @@ labelmap={} #map which stores label with PC address
 for ind,ins in enumerate(assemblyinput): #maps all the labels and removes them too
     if ':' in ins:
         holder=ins.split(':')
-        labelmap[holder[0]]=programcounter
-        assemblyinput[ind]=holder[1]
-    programcounter+=0x00000004
+        if holder[0] in (supported_instructions+ registerdict.keys()):
+            print("Misuse of variable as label")
+        else:
+            labelmap[holder[0]]=programcounter
+            assemblyinput[ind]=holder[1]
+        programcounter+=0x00000004
             
 programcounter=0x00000000 #resetting the program counter again
+
 
 for i in assemblyinput: #main processing of assembly lines
     instructionsplit=i.split()
@@ -368,6 +403,11 @@ for i in assemblyinput: #main processing of assembly lines
     rtypes=["add","sub","sll","slt","sltu","xor","srl","or","and"]
     btypes=["beq","bne","blt","bge","bltu","bgeu"]
     
+    if counter==last_line:
+        if opcode in btypes:
+            b_type(i)
+        else:
+            print("Last instrcution not halt instruction.")
     if opcode in rtypes:
         r_type(i)
 
@@ -388,3 +428,8 @@ for i in assemblyinput: #main processing of assembly lines
     
     programcounter+=0x00000004
     counter+=1
+    if counter >64:
+        print("Extra Instructions above 64 not permitted.")
+        break
+
+
