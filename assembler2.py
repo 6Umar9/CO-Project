@@ -4,7 +4,7 @@ output_file = sys.argv[2]
 wf=open(output_file,"w")
 wf.close()
 
-def imm_or_label(given):
+def imm_or_label(given): #Function to check label or imm and return accordingly always returns int
     global counter
     global programcounter
     try:
