@@ -1,11 +1,16 @@
 import sys
 
-with open("/Users/teo/Desktop/CO Project/input.txt","r") as inputstream:
+input_file=sys.argv[1]
+output_file=sys.argv[2]
+
+# input- "/Users/teo/Desktop/CO Project/input.txt"
+# output- "/Users/teo/Desktop/CO Project/output.txt"
+with open(input_file,"r") as inputstream:
     assembly=inputstream.read().lower()
     assemblyinput=[line.strip() for line in assembly.splitlines() if line.strip()] #there is no need to pop the last line as if it exists it is ignored in splitlines method.
 
 
-output_file="/Users/teo/Desktop/CO Project/output.txt"
+output_file=output_file
 wf=open(output_file,"w")
 wf.close()
 
@@ -16,7 +21,7 @@ def imm_or_label(given): #Function to check label or imm and return accordingly 
         return int(given)
     except ValueError:
         try:
-            return -(labelmap[given]-programcounter)
+            return (labelmap[given]-programcounter)
         except:
             return "error"
     
@@ -46,7 +51,7 @@ def j_type(instruction):
         print(f"Illegal Label {args[1]}")
         return
     imm=str(bin_converter(imm,21))
-    if imm=="-1":
+    if imm==-1:
         print(f'Immediate value out of range in line {counter}')
         return 
 
@@ -86,7 +91,7 @@ def u_type(instruction):
     imm=int(args[1])
     imm=str(bin_converter(imm,32))
 
-    if imm=="-1":
+    if imm==-1:
         print(f'Immediate value out of range in line {counter}')
         return
 
@@ -192,7 +197,7 @@ def b_type(string1):
         return
     immi=bin_converter(immi,13) #converting immediate to binary
 
-    if immi=='-1': #to check if output is -1 which signifies error as mentioned above
+    if immi==-1: #to check if output is -1 which signifies error as mentioned above
         print(f'Immediate value out of range in line {counter}')
         return
     
@@ -224,7 +229,8 @@ def b_type(string1):
         return
 
     elif codeinstruction!=halt_instr and counter==last_line:
-        print("Last instrcution not halt instruction.")
+        print("Last instruction not halt instruction.")
+
     print(codeinstruction)
 
     wf=open(output_file,'a')
@@ -251,7 +257,7 @@ def i_type(instruction):
         
         immi=bin_converter(int(ffs[0]),12)
 
-        if immi=='-1':
+        if immi==-1:
             print(f'Immediate value out of range in line {counter}')
             return
         
@@ -282,7 +288,7 @@ def i_type(instruction):
 
         immi=bin_converter(int(registers[2]),12)
 
-        if immi=='-1': #to check if output is -1 which signifies error
+        if immi==-1: #to check if output is -1 which signifies error
             print(f'Immediate value out of range in line {counter}')
             return
         
@@ -341,7 +347,7 @@ def bin_converter(no,width=32):
             return sign_extension(compli,width)
             
     else:
-        return "-1"
+        return -1
 
 registerdict={ #dictionary with all register address
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011",
@@ -368,7 +374,6 @@ supported_instructions=["add","sub","sll","slt","sltu","xor","srl","sra","or","a
 counter=1 #counter no used for error lines
 last_line=len(assemblyinput)
 
-
 programcounter=0x00000000 # 32 bit counter for PC
 
 labelmap={} #map which stores label with PC address
@@ -376,12 +381,12 @@ labelmap={} #map which stores label with PC address
 for ind,ins in enumerate(assemblyinput): #maps all the labels and removes them too
     if ':' in ins:
         holder=ins.split(':')
-        if holder[0] in (supported_instructions+ registerdict.keys()):
+        if holder[0] in (supported_instructions+ list(registerdict.keys())):
             print("Misuse of variable as label")
         else:
             labelmap[holder[0]]=programcounter
             assemblyinput[ind]=holder[1]
-        programcounter+=0x00000004
+    programcounter+=0x00000004
             
 programcounter=0x00000000 #resetting the program counter again
 
@@ -406,9 +411,10 @@ for i in assemblyinput: #main processing of assembly lines
     if counter==last_line:
         if opcode in btypes:
             b_type(i)
+            
         else:
             print("Last instrcution not halt instruction.")
-    if opcode in rtypes:
+    elif opcode in rtypes:
         r_type(i)
 
     elif opcode in btypes:
