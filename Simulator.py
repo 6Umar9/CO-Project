@@ -33,8 +33,6 @@ class RISC_V_Simulator:
                 self.j_type(instruction)
             elif opcode in ["lui", "auipc"]:
                 self.u_type(instruction)
-            elif opcode in ["sw"]:
-                self.s_type(instruction)
             else:
                 print("Unknown instruction:", opcode)
                 break
@@ -58,9 +56,6 @@ class RISC_V_Simulator:
         pass  # Implement this function
 
     def u_type(self, instruction):
-        pass  # Implement this function
-
-    def s_type(self, instruction):
         pass  # Implement this function
 
     def r_type(self, instruction):
@@ -105,8 +100,65 @@ class RISC_V_Simulator:
         elif opcode == "and":
             self.registers[rd] = self.registers[rs1] & self.registers[rs2]
 
-    def b_type(self, instruction):
-        pass  # Implement this function
+    def b_type(self, instruction): #fix Imm later
+        opcode, rs1, rs2, imm = instruction.split()
+        rs1 = int(rs1[1:])
+        rs2 = int(rs2[1:])
+        imm = int(imm)
+
+        def sign_extend(value, bits):
+            if value >> (bits - 1) & 1:  # Check if the sign bit is set
+                return value | ((1 << (32 - bits)) - 1) << bits
+            return value
+        
+        def signed_to_unsigned(value):
+            if value < 0:
+                return value & 0xFFFFFFFF
+            else:
+                return value
+            
+        if opcode == "beq":
+            rs1_value = self.registers[rs1]
+            rs2_value = self.registers[rs2]
+            rs1_value = sign_extend(rs1_value,32)
+            rs2_value = sign_extend(rs2_value,32)
+            self.pc = self.pc+imm if rs1_value == rs2_value else 0
+
+        if opcode == "bne":
+            rs1_value = self.registers[rs1]
+            rs2_value = self.registers[rs2]
+            rs1_value = sign_extend(rs1_value,32)
+            rs2_value = sign_extend(rs2_value,32)
+            self.pc = self.pc+imm if rs1_value != rs2_value else 0
+
+        if opcode == "bge":
+            rs1_value = self.registers[rs1]
+            rs2_value = self.registers[rs2]
+            rs1_value = sign_extend(rs1_value,32)
+            rs2_value = sign_extend(rs2_value,32)
+            self.pc = self.pc+imm if rs1_value >= rs2_value else 0
+
+        if opcode == "bgeu":
+            rs1_value = self.registers[rs1]
+            rs2_value = self.registers[rs2]
+            rs1_value = sign_extend(signed_to_unsigned(rs1_value))
+            rs2_value = sign_extend(signed_to_unsigned(rs2_value))
+            self.pc = self.pc+imm if rs1_value >= rs2_value else 0
+
+        if opcode == "bltu":
+            rs1_value = self.registers[rs1]
+            rs2_value = self.registers[rs2]
+            rs1_value = sign_extend(signed_to_unsigned(rs1_value))
+            rs2_value = sign_extend(signed_to_unsigned(rs2_value))
+            self.pc = self.pc+imm if rs1_value < rs2_value else 0
+
+        if opcode == "blt":
+            rs1_value = self.registers[rs1]
+            rs2_value = self.registers[rs2]
+            rs1_value = signed_to_unsigned(rs1_value)
+            rs2_value = signed_to_unsigned(rs2_value)
+            self.pc = self.pc+imm if rs1_value < rs2_value else 0
+
 
     def i_type(self, instruction):
         pass  # Implement this function
