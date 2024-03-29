@@ -33,6 +33,8 @@ class RISC_V_Simulator:
                 self.j_type(instruction)
             elif opcode in ["lui", "auipc"]:
                 self.u_type(instruction)
+            elif opcode in ["sw"]:
+                self.s_type(instruction)
             else:
                 print("Unknown instruction:", opcode)
                 break
@@ -57,6 +59,27 @@ class RISC_V_Simulator:
 
     def u_type(self, instruction):
         pass  # Implement this function
+
+    def s_type(self, instruction):
+        opcode, offset_rs2_rs1 = instruction.split()
+        offset, rs2_rs1 = offset_rs2_rs1.split("(")
+        offset = int(offset)
+        rs2, rs1 = rs2_rs1[:-1].split(",")
+        rs1 = int(rs1[1:])  # Extract base register number
+        rs2 = int(rs2[1:])  # Extract source register number
+    
+        address = self.registers[rs1] + offset
+        value = self.registers[rs2]
+    
+        # Perform sign extension if necessary
+        offset = self.sign_extend(offset, 12)
+    
+        # Ensure address is aligned if storing a word
+        if address % 4 != 0:
+            print("Unaligned memory access for sw instruction.")
+            return
+        else:
+            self.memory[address] = value
 
     def r_type(self, instruction):
         opcode, rd, rs1, rs2 = instruction.split()
