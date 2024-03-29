@@ -58,6 +58,9 @@ class RISC_V_Simulator:
     def u_type(self, instruction):
         pass  # Implement this function
 
+    def s_type(self, instruction):
+        pass  # Implement this function
+
     def r_type(self, instruction):
         opcode, rd, rs1, rs2 = instruction.split()
         rd = int(rd[1:])  # Extract destination register number
