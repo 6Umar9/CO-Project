@@ -33,6 +33,8 @@ class RISC_V_Simulator:
                 self.j_type(instruction)
             elif opcode in ["lui", "auipc"]:
                 self.u_type(instruction)
+            elif opcode in ["sw"]:
+                self.s_type(instruction)
             else:
                 print("Unknown instruction:", opcode)
                 break
