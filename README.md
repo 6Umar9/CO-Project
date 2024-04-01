@@ -26,6 +26,11 @@ It checks for the type of instructions (`B-Type, R-Type and so on`), verifies if
 
 The labels as well as the immediates were taken into account and verified for each line. The Assembler follows the project details and produces an error if it detects an invalid `opcode`, `register`, `label` or out of bound `immediate` value.
 
+## Simple-Simulator
+#### linkhere
+
+Takes binary input
+
 This is done through the construction of *dictionaries* which contain all the registers, functions which check *labels* and *immediates*, and finally, *functions* which contains the instructions based on the *op-code*.
 
 ## Automated Testing Cases
