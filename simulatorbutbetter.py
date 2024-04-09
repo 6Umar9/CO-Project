@@ -23,12 +23,15 @@ class RISC_V_Simulator:
         nw=width-len(bin)
         return (bin[0]*nw)+bin
 
-    def bin_to_int(self,bin):
-        if bin[0]=='1':
-            width=len(bin)-1
-            num=(2**width)-int(bin[1:],2)
-            return -num
-        return int(bin[1:],2)
+    def bin_to_int(self,bin,signed):
+        if signed==1:
+            if bin[0]=='1':
+                width=len(bin)-1
+                num=(2**width)-int(bin[1:],2)
+                return -num
+            return int(bin[1:],2)
+        elif signed==0:
+            return int(bin,2)
 
     def register_output(self):
         output=self.int_to_bin(self.pc,32)
@@ -44,7 +47,12 @@ class RISC_V_Simulator:
             output=output+"0x"+format(4*i+65536,"08x")+":"+"0b"+format(j,"032b")+"\n"
         with open(output_file,"a") as file:
             file.write(output)
-    
+    def stype(self,ins):
+        ins=ins[::-1]
+        imm=ins[7:12][::-1]+ins[25:32][::-1]
+        immval=self.bin_to_int(imm,1)
+        reg=ins[::-1][15:20][::-1]
+        memadd=immval+self.registers[self.bin_to_int(reg,0)]
     def execute(self,input_file):
         read=open(input_file,'r')
         program=read.read().split()
@@ -52,8 +60,9 @@ class RISC_V_Simulator:
             opcode=program[self.pc][-7:]
             #use match case to match opcodes and run your functions 
             match opcode:
-                case '0110011':
-                    print("sad")
+                case '0100011': #s_type
+                    self.stype(program[self.pc])
+                    
 #incase of btype or any change in pc then reduce the changed pc to pc -1 since it increases by one
             sim.register_output()
             self.pc+=1
