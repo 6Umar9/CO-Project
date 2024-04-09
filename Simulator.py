@@ -3,35 +3,17 @@ class RISC_V_Simulator:
         self.registers = [0] * 32
         self.memory = [0] * 4096  # 4KB memory
         self.pc = 0  # Program Counter
-        self.label_map = {}
         self.last_line = 0
 
-    def load_program(self, program):
-        self.pc = 0
-        for ind, line in enumerate(program):
-            if ':' in line:
-                label, _ = line.split(':')
-                self.label_map[label] = self.pc
-                self.last_line = ind
-            self.pc += 4
-
-        self.pc = 0  # Reset PC
-        self.last_line -= 1  # Adjusting last_line for 0-based index
-
     def execute(self, program):
-        self.load_program(program)
         while self.pc <= len(program) * 4:
             instruction = program[self.pc // 4]
+            opcode=instruction[-1:-7:-1]
+            print(opcode)
             opcode, *args = instruction.split()
             if opcode in ["add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and"]:
                 self.r_type(instruction)
             elif opcode in ["lw", "sw", "jalr", "addi", "slti", "sltiu", "xori", "ori", "andi", "slli", "srli", "srai"]:
-                self.i_type(instruction)
-            elif opcode in ["beq", "bne", "blt", "bge", "bltu", "bgeu"]:
-                self.b_type(instruction)
-            elif opcode in ["jal"]:
-                self.j_type(instruction)
-            elif opcode in ["lui", "auipc"]:
                 self.u_type(instruction)
             elif opcode in ["sw"]:
                 self.s_type(instruction)
