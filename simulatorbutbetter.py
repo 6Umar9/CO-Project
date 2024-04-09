@@ -10,7 +10,7 @@ class RISC_V_Simulator:
         self.memory= [0] * 32
         self.pc= 0
 
-    def int_to_bin(self,num,width):
+    def int_to_bin(self,num,width): #returns with 0b remove if needed using slicing
         width=width-1
         if num<0:
             num=(2**(width))+num
@@ -44,15 +44,26 @@ class RISC_V_Simulator:
     def memory_output(self):
         output=""
         for i,j in enumerate(self.memory):
-            output=output+"0x"+format(4*i+65536,"08x")+":"+"0b"+format(j,"032b")+"\n"
+            output=output+"0x"+format(4*i+65536,"08x")+":"+self.int_to_bin(j,32)+"\n"
         with open(output_file,"a") as file:
             file.write(output)
+
     def stype(self,ins):
-        ins=ins[::-1]
-        imm=ins[7:12][::-1]+ins[25:32][::-1]
+        imm=ins[::-1][25:32][::-1]+ins[::-1][7:12][::-1]
         immval=self.bin_to_int(imm,1)
         reg=ins[::-1][15:20][::-1]
-        memadd=immval+self.registers[self.bin_to_int(reg,0)]
+        memadr=immval+self.registers[self.bin_to_int(reg,0)]
+        self.memory[memadr//4]=self.registers[self.bin_to_int(ins[::-1][20:25][::-1],0)]
+    
+    def utype(self,ins):
+        rd=ins[::-1][7:12][::-1]
+        rdint=self.bin_to_int(rd,0)
+        imm=ins[::-1][12:32][::-1]
+        if ins[::-1][0:7][::-1] == "0110111": #lui
+            self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)
+        if ins[::-1][0:7][::-1] == "0010111": #auipc
+            self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)+4*self.pc
+
     def execute(self,input_file):
         read=open(input_file,'r')
         program=read.read().split()
@@ -62,7 +73,10 @@ class RISC_V_Simulator:
             match opcode:
                 case '0100011': #s_type
                     self.stype(program[self.pc])
-                    
+                case '0110111':
+                    self.utype(program[self.pc])
+                case '0010111':
+                    self.utype(program[self.pc])
 #incase of btype or any change in pc then reduce the changed pc to pc -1 since it increases by one
             sim.register_output()
             self.pc+=1
