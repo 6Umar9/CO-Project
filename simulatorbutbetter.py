@@ -49,8 +49,13 @@ class RISC_V_Simulator:
         read=open(input_file,'r')
         program=read.read().split()
         while self.pc<len(program):
+            opcode=program[self.pc][-7:]
+            #use match case to match opcodes and run your functions 
+            match opcode:
+                case '0110011':
+                    print("sad")
+#incase of btype or any change in pc then reduce the changed pc to pc -1 since it increases by one
             sim.register_output()
-            print(program[self.pc])
             self.pc+=1
 sim = RISC_V_Simulator()
 sim.execute(input_file)
