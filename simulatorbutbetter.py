@@ -63,6 +63,7 @@ class RISC_V_Simulator:
             self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)
         if ins[::-1][0:7][::-1] == "0010111": #auipc
             self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)+4*self.pc
+            
     def rtype(self, ins):
         rd = ins[::-1][7:12][::-1]
         rs1 = ins[::-1][15:20][::-1]
@@ -93,6 +94,60 @@ class RISC_V_Simulator:
                 self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] >> self.registers[self.bin_to_int(rs2, 0)]
             else:
                 self.registers[self.bin_to_int(rd, 0)] = (self.registers[self.bin_to_int(rs1, 0)] + (1 << 32)) >> self.registers[self.bin_to_int(rs2, 0)]
+                
+    def btype(self, instruction):
+        opcode = instruction[-7:]
+        imm = instruction[::-1][1:11][::-1] + instruction[::-1][11][::-1] + instruction[::-1][19:32][::-1]
+        imm = self.bin_to_int(imm, 1)
+        rs1 = self.bin_to_int(instruction[::-1][15:20][::-1], 0)
+        rs2 = self.bin_to_int(instruction[::-1][20:25][::-1], 0)
+    
+        rs1_value = self.registers[rs1]
+        rs2_value = self.registers[rs2]
+    
+        def sign_extend(value, bits):
+            if value >> (bits - 1) & 1:  # Check if the sign bit is set
+                return value | ((1 << (32 - bits)) - 1) << bits
+            return value
+
+        def signed_to_unsigned(value):
+            if value < 0:
+                return value & 0xFFFFFFFF
+            else:
+                return value
+
+        match opcode:
+            case '1100011':  # beq
+                if rs1_value == rs2_value:
+                    self.pc = self.pc + imm
+            case '1100111':  # bne
+                if rs1_value != rs2_value:
+                    self.pc = self.pc + imm
+            case '1101011':  # bge
+                if rs1_value >= rs2_value:
+                    self.pc = self.pc + imm
+            case '1101111':  # bgeu
+                if signed_to_unsigned(rs1_value) >= signed_to_unsigned(rs2_value):
+                    self.pc = self.pc + imm
+            case '1110011':  # bltu
+                if signed_to_unsigned(rs1_value) < signed_to_unsigned(rs2_value):
+                    self.pc = self.pc + imm
+            case '1110111':  # blt
+                if rs1_value < rs2_value:
+                    self.pc = self.pc + imm
+    
+    def i_type(self, instruction):
+        opcode = instruction[-7:]
+        imm = instruction[::-1][20:32][::-1]
+        imm = self.bin_to_int(imm, 1)
+        rd = self.bin_to_int(instruction[::-1][7:12][::-1], 0)
+    
+        match opcode:
+            case '1101111':  # jal
+                self.registers[rd] = self.pc + 4
+                self.pc = self.pc + imm
+
+
         
 
 
