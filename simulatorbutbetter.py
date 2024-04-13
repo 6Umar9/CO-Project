@@ -63,6 +63,38 @@ class RISC_V_Simulator:
             self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)
         if ins[::-1][0:7][::-1] == "0010111": #auipc
             self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)+4*self.pc
+    def rtype(self, ins):
+        rd = ins[::-1][7:12][::-1]
+        rs1 = ins[::-1][15:20][::-1]
+        rs2 = ins[::-1][20:25][::-1]
+        funct3 = ins[::-1][27:32][::-1]
+        funct7 = ins[::-1][20:27][::-1]
+    
+        if funct3 == '000' and funct7 == '0000000':  # ADD
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] + self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '000' and funct7 == '0100000':  # SUB
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] - self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '111' and funct7 == '0000000':  # AND
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] & self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '110' and funct7 == '0000000':  # OR
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] | self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '000' and funct7 == '0000000':  # XOR
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] ^ self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '001'and funct7== '0000000': #SLL
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] << self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '010' and funct7=='0000000':  # SLT
+            self.registers[self.bin_to_int(rd, 0)] = 1 if self.registers[self.bin_to_int(rs1, 0)] < self.registers[self.bin_to_int(rs2, 0)] else 0
+        elif funct3 == '011' and funct7=='0000000':  # SLTU
+            self.registers[self.bin_to_int(rd, 0)] = 1 if self.registers[self.bin_to_int(rs1, 0)] < self.registers[self.bin_to_int(rs2, 0)] else 0
+        elif funct3 == '100' and funct7 == '0000000':  # XOR
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] ^ self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '101' and funct7 == '0000000':  # SRL
+            if self.registers[self.bin_to_int(rs1, 0)] >= 0:
+                self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] >> self.registers[self.bin_to_int(rs2, 0)]
+            else:
+                self.registers[self.bin_to_int(rd, 0)] = (self.registers[self.bin_to_int(rs1, 0)] + (1 << 32)) >> self.registers[self.bin_to_int(rs2, 0)]
+        
+
 
     def execute(self,input_file):
         read=open(input_file,'r')
