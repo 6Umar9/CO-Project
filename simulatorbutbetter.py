@@ -10,7 +10,7 @@ class RISC_V_Simulator:
         self.memory= [0] * 32
         self.pc= 0
 
-    def int_to_bin(self,num,width): #returns with 0b remove if needed using slicing
+    def int_to_bin(self,num,width=32): #returns with 0b remove if needed using slicing
         width=width-1
         if num<0:
             num=(2**(width))+num
@@ -48,6 +48,33 @@ class RISC_V_Simulator:
         with open(output_file,"a") as file:
             file.write(output)
 
+    def rtype(self, ins, ):
+        rd = ins[::-1][7:12][::-1]
+        rs1 = ins[::-1][15:20][::-1]
+        rs2 = ins[::-1][20:25][::-1]
+        funct3 = ins[::-1][12:15][::-1]
+        funct7 = ins[::-1][25:32][::-1]
+    
+        if funct3 == '000' and funct7 == '0000000':  # ADD
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] + self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '000' and funct7 == '0100000':  # SUB
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] - self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '111' and funct7 == '0000000':  # AND
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] & self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '110' and funct7 == '0000000':  # OR
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] | self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '100' and funct7 == '0000000':  # XOR
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] ^ self.registers[self.bin_to_int(rs2, 0)]
+        elif funct3 == '001'and funct7== '0000000': #SLL
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] << self.bin_to_int(self.int_to_bin( self.registers[self.bin_to_int(rs2, 0)] )[2:][-5:],0)
+        elif funct3 == '010' and funct7=='0000000':  # SLT
+            self.registers[self.bin_to_int(rd, 0)] = 1 if self.registers[self.bin_to_int(rs1, 0)] < self.registers[self.bin_to_int(rs2, 0)] else 0
+        elif funct3 == '011' and funct7=='0000000':  # SLTU
+            self.registers[self.bin_to_int(rd, 0)] = 1 if self.bin_to_int(self.int_to_bin(self.registers[self.bin_to_int(rs1, 0)])[2:], 0) < self.bin_to_int(self.int_to_bin(self.registers[self.bin_to_int(rs2, 0)])[2:], 0) else 0
+        elif funct3 == '101' and funct7 == '0000000':  # SRL
+            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] >> self.bin_to_int(self.int_to_bin( self.registers[self.bin_to_int(rs2, 0)] )[2:][-5:],0)
+
+
     def stype(self,ins):
         imm=ins[::-1][25:32][::-1]+ins[::-1][7:12][::-1]
         immval=self.bin_to_int(imm,1)
@@ -64,37 +91,7 @@ class RISC_V_Simulator:
         if ins[::-1][0:7][::-1] == "0010111": #auipc
             self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)+4*self.pc
             
-    def rtype(self, ins):
-        rd = ins[::-1][7:12][::-1]
-        rs1 = ins[::-1][15:20][::-1]
-        rs2 = ins[::-1][20:25][::-1]
-        funct3 = ins[::-1][27:32][::-1]
-        funct7 = ins[::-1][20:27][::-1]
     
-        if funct3 == '000' and funct7 == '0000000':  # ADD
-            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] + self.registers[self.bin_to_int(rs2, 0)]
-        elif funct3 == '000' and funct7 == '0100000':  # SUB
-            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] - self.registers[self.bin_to_int(rs2, 0)]
-        elif funct3 == '111' and funct7 == '0000000':  # AND
-            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] & self.registers[self.bin_to_int(rs2, 0)]
-        elif funct3 == '110' and funct7 == '0000000':  # OR
-            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] | self.registers[self.bin_to_int(rs2, 0)]
-        elif funct3 == '000' and funct7 == '0000000':  # XOR
-            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] ^ self.registers[self.bin_to_int(rs2, 0)]
-        elif funct3 == '001'and funct7== '0000000': #SLL
-            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] << self.registers[self.bin_to_int(rs2, 0)]
-        elif funct3 == '010' and funct7=='0000000':  # SLT
-            self.registers[self.bin_to_int(rd, 0)] = 1 if self.registers[self.bin_to_int(rs1, 0)] < self.registers[self.bin_to_int(rs2, 0)] else 0
-        elif funct3 == '011' and funct7=='0000000':  # SLTU
-            self.registers[self.bin_to_int(rd, 0)] = 1 if self.registers[self.bin_to_int(rs1, 0)] < self.registers[self.bin_to_int(rs2, 0)] else 0
-        elif funct3 == '100' and funct7 == '0000000':  # XOR
-            self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] ^ self.registers[self.bin_to_int(rs2, 0)]
-        elif funct3 == '101' and funct7 == '0000000':  # SRL
-            if self.registers[self.bin_to_int(rs1, 0)] >= 0:
-                self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] >> self.registers[self.bin_to_int(rs2, 0)]
-            else:
-                self.registers[self.bin_to_int(rd, 0)] = (self.registers[self.bin_to_int(rs1, 0)] + (1 << 32)) >> self.registers[self.bin_to_int(rs2, 0)]
-                
     def btype(self, instruction):
         opcode = instruction[-7:]
         imm = instruction[::-1][1:11][::-1] + instruction[::-1][11][::-1] + instruction[::-1][19:32][::-1]
@@ -149,24 +146,40 @@ class RISC_V_Simulator:
 
 
         
+    def j_type(self, instruction):
+        # opcode=instruction[-7:]
+        rd=instruction[-12:-7]
+        imm="0"*21
+        imm[-21]=instruction[-32]
+        imm[-11:-1]=instruction[-31:-21]
+        imm[-12]=instruction[-21]
+        imm[-20:-12]=instruction[-20:-12]
 
+        self.registers[self.bin_to_int(rd,0)]=self.pc+1
+        self.pc+=int(self.bin_to_int(self.sext(imm, 32))/4) #imm 0 bit is 0
 
     def execute(self,input_file):
         read=open(input_file,'r')
-        program=read.read().split()
-        while self.pc<len(program):
+        program=[line.strip() for line in read.read().linesplit() if line]
+        while self.pc<len(program): 
             opcode=program[self.pc][-7:]
             #use match case to match opcodes and run your functions 
             match opcode:
+                case '0110011': #r_type
+                    self.rtype(program)
+                    self.pc+=1
                 case '0100011': #s_type
                     self.stype(program[self.pc])
                 case '0110111':
                     self.utype(program[self.pc])
                 case '0010111':
                     self.utype(program[self.pc])
-#incase of btype or any change in pc then reduce the changed pc to pc -1 since it increases by one
+                
+#incase of btype or any change in pc, reduce the changed pc to pc -1 since it increases by one
             sim.register_output()
             self.pc+=1
 sim = RISC_V_Simulator()
 sim.execute(input_file)
 sim.memory_output()
+
+
