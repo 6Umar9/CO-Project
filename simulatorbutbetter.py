@@ -1,12 +1,13 @@
 import sys
 
-input_file="./s_test1.txt"
-output_file="./s1_output.txt"
+input_file="./s_test2.txt"
+output_file="./s2_output.txt"
 a=open(output_file,"w")
 a.close()
 class RISC_V_Simulator:
     def __init__(self):
         self.registers = [0] * 32
+        self.registers[2]=256
         self.memory= [0] * 32
         self.pc= 0
 
@@ -37,7 +38,7 @@ class RISC_V_Simulator:
             return int(bin,2)
 
     def register_output(self):
-        output=self.int_to_bin(self.pc,32)
+        output=self.int_to_bin(4*(self.pc),32)
         for i in self.registers:
             output=output+ " " + self.int_to_bin(i,32)
         output=output+"\n"
@@ -57,7 +58,7 @@ class RISC_V_Simulator:
         rs2 = ins[::-1][20:25][::-1]
         funct3 = ins[::-1][12:15][::-1]
         funct7 = ins[::-1][25:32][::-1]
-    
+
         if funct3 == '000' and funct7 == '0000000':  # ADD
             self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] + self.registers[self.bin_to_int(rs2, 0)]
         elif funct3 == '000' and funct7 == '0100000':  # SUB
@@ -90,7 +91,7 @@ class RISC_V_Simulator:
 
         match opcode:
             case '1100111':  # jalr
-                self.registers[rd] = 4*self.pc + 4 
+                self.registers[self.bin_to_int(rd,0)] = 4*self.pc + 4 
                 self.pc = (self.registers[6]+imm_value)//4
 
             case '0010011' : #sltiu
@@ -181,19 +182,20 @@ class RISC_V_Simulator:
     def j_type(self, instruction):
         # opcode=instruction[-7:]
         rd=instruction[-12:-7]
-        imm="0"*21
-        imm[-21]=instruction[-32]
-        imm[-11:-1]=instruction[-31:-21]
-        imm[-12]=instruction[-21]
-        imm[-20:-12]=instruction[-20:-12]
+        imm=instruction[-32]+instruction[-20:-12]+instruction[-21]+instruction[-31:-21]+'0'
+        # imm[-21]=instruction[-32]
+        # imm[-11:-1]=instruction[-31:-21]
+        # imm[-12]=instruction[-21]
+        # imm[-20:-12]=instruction[-20:-12]
 
         self.registers[self.bin_to_int(rd,0)]=4*self.pc+4
-        self.pc+=self.bin_to_int(self.sext(imm, 32))//4 #imm 0 bit is 0
+        self.pc+=self.bin_to_int(self.sext(imm, 32), 1)//4 #imm 0 bit is 0
 
     def execute(self,input_file):
         read=open(input_file,'r')
         program=[line.strip() for line in read.read().splitlines() if line]
         while self.pc<len(program): 
+            print(self.pc)
             if program[self.pc]=='00000000000000000000000001100011':
                 self.register_output()
                 break
