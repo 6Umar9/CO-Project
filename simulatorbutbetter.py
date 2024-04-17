@@ -1,7 +1,7 @@
 import sys
 
-input_file=sys.argv[1]
-output_file=sys.argv[2]
+input_file="./s_test1.txt"
+output_file="./s1_output.txt"
 a=open(output_file,"w")
 a.close()
 class RISC_V_Simulator:
@@ -11,6 +11,7 @@ class RISC_V_Simulator:
         self.pc= 0
 
     def int_to_bin(self,num,width=32): #returns with 0b remove if needed using slicing
+        num=int(num)
         width=width-1
         if num<0:
             num=(2**(width))+num
@@ -24,6 +25,7 @@ class RISC_V_Simulator:
         return (bin[0]*nw)+bin
 
     def bin_to_int(self,bin,signed):
+        bin=str(bin)
         if signed==1:
             if bin[0]=='1':
                 width=len(bin)-1
@@ -31,6 +33,7 @@ class RISC_V_Simulator:
                 return -num
             return int(bin[1:],2)
         elif signed==0:
+
             return int(bin,2)
 
     def register_output(self):
@@ -80,8 +83,8 @@ class RISC_V_Simulator:
         opcode = instruction[-7:]
         imm = instruction[::-1][20:32][::-1]
         imm_value = self.bin_to_int(imm, 1)
-        rd = self.bin_to_int(instruction[::-1][7:12][::-1], 0)
-        rs1 = self.bin_to_int(instruction[::-1][15:20][::-1], 0)
+        rd = instruction[::-1][7:12][::-1]
+        rs1 = instruction[::-1][15:20][::-1]
 
         funct3=instruction[::-1][12:15][::-1]
 
@@ -98,7 +101,7 @@ class RISC_V_Simulator:
                 self.pc+=1
             case "0000011":
                 if funct3 =='010':
-                    self.registers[self.bin_to_int(rd, 0)] = self.memory[(self.registers[self.bin_to_int(rs1, 0)] + imm_value - 16**4)/4] 
+                    self.registers[self.bin_to_int(rd, 0)] = self.memory[(self.registers[self.bin_to_int(rs1, 0)] + imm_value - 16**4)//4] 
                 self.pc+=1
 
     def stype(self,ins):
@@ -131,6 +134,7 @@ class RISC_V_Simulator:
             return self.bin_to_int(self.int_to_bin(value)[2:],0)
 
         done=False
+
         match funct3:
             case '000':  # beq
                 if rs1_value == rs2_value:
@@ -156,11 +160,11 @@ class RISC_V_Simulator:
                 if rs1_value < rs2_value:
                     self.pc = self.pc + imm_value//4
                     done=True
-            
+        
         if not done:
             self.pc+=1
 
-
+ 
 
     def utype(self,ins):
         opcode=ins[-7:]
@@ -172,7 +176,7 @@ class RISC_V_Simulator:
         if opcode == "0010111": #auipc
             self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)+4*self.pc
         
-        pc+=1
+        self.pc+=1
 
     def j_type(self, instruction):
         # opcode=instruction[-7:]
@@ -188,8 +192,11 @@ class RISC_V_Simulator:
 
     def execute(self,input_file):
         read=open(input_file,'r')
-        program=[line.strip() for line in read.read().linesplit() if line]
+        program=[line.strip() for line in read.read().splitlines() if line]
         while self.pc<len(program): 
+            if program[self.pc]=='00000000000000000000000001100011':
+                self.register_output()
+                break
             opcode=program[self.pc][-7:]
             #use match case to match opcodes and run your functions 
             match opcode:
@@ -215,3 +222,6 @@ sim.execute(input_file)
 
 
 
+
+# with open(output_file, 'r') as f:
+#     print(f.read())
