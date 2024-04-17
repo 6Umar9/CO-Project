@@ -74,78 +74,106 @@ class RISC_V_Simulator:
         elif funct3 == '101' and funct7 == '0000000':  # SRL
             self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] >> self.bin_to_int(self.int_to_bin( self.registers[self.bin_to_int(rs2, 0)] )[2:][-5:],0)
 
+        self.pc+=1
+
+    def i_type(self, instruction):
+        opcode = instruction[-7:]
+        imm = instruction[::-1][20:32][::-1]
+        imm_value = self.bin_to_int(imm, 1)
+        rd = self.bin_to_int(instruction[::-1][7:12][::-1], 0)
+        rs1 = self.bin_to_int(instruction[::-1][15:20][::-1], 0)
+
+        funct3=instruction[::-1][12:15][::-1]
+
+        match opcode:
+            case '1100111':  # jalr
+                self.registers[rd] = 4*self.pc + 4 
+                self.pc = (self.registers[6]+imm_value)//4
+
+            case '0010011' : #sltiu
+                if funct3 == '011':
+                    self.registers[self.bin_to_int(rd, 0)] = 1 if self.bin_to_int(self.int_to_bin(self.registers[self.bin_to_int(rs1, 0)])[2:], 0) < self.bin_to_int(imm,0) else 0
+                if funct3 == '000':
+                    self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] + imm_value
+                self.pc+=1
+            case "0000011":
+                if funct3 =='010':
+                    self.registers[self.bin_to_int(rd, 0)] = self.memory[(self.registers[self.bin_to_int(rs1, 0)] + imm_value - 16**4)/4] 
+                self.pc+=1
 
     def stype(self,ins):
         imm=ins[::-1][25:32][::-1]+ins[::-1][7:12][::-1]
         immval=self.bin_to_int(imm,1)
-        reg=ins[::-1][15:20][::-1]
-        memadr=immval+self.registers[self.bin_to_int(reg,0)]
-        self.memory[memadr//4]=self.registers[self.bin_to_int(ins[::-1][20:25][::-1],0)]
-    
-    def utype(self,ins):
-        rd=ins[::-1][7:12][::-1]
-        rdint=self.bin_to_int(rd,0)
-        imm=ins[::-1][12:32][::-1]
-        if ins[::-1][0:7][::-1] == "0110111": #lui
-            self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)
-        if ins[::-1][0:7][::-1] == "0010111": #auipc
-            self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)+4*self.pc
-            
-    
+        rs1=ins[::-1][15:20][::-1]
+        rs2=ins[::-1][20:25][::-1]
+        funct3=ins[::-1][12:15][::-1]
+        memadr=immval+self.registers[self.bin_to_int(rs1,0)] -16**4
+        self.memory[memadr//4]=self.registers[self.bin_to_int(rs2,0)]
+        self.pc+=1
+
     def btype(self, instruction):
         opcode = instruction[-7:]
-        imm = instruction[::-1][1:11][::-1] + instruction[::-1][11][::-1] + instruction[::-1][19:32][::-1]
-        imm = self.bin_to_int(imm, 1)
+        imm = instruction[-32]+instruction[-8]+instruction[-31:-25] + instruction[-12:-7] + '0'
         rs1 = self.bin_to_int(instruction[::-1][15:20][::-1], 0)
         rs2 = self.bin_to_int(instruction[::-1][20:25][::-1], 0)
-    
+        funct3=instruction[::-1][12:15][::-1]
+
+        imm_value = self.bin_to_int(imm, 1)
         rs1_value = self.registers[rs1]
         rs2_value = self.registers[rs2]
     
-        def sign_extend(value, bits):
-            if value >> (bits - 1) & 1:  # Check if the sign bit is set
-                return value | ((1 << (32 - bits)) - 1) << bits
-            return value
+        # def sign_extend(value, bits):
+        #     if value >> (bits - 1) & 1:  # Check if the sign bit is set
+        #         return value | ((1 << (32 - bits)) - 1) << bits
+        #     return value
 
         def signed_to_unsigned(value):
-            if value < 0:
-                return value & 0xFFFFFFFF
-            else:
-                return value
+            return self.bin_to_int(self.int_to_bin(value)[2:],0)
 
-        match opcode:
-            case '1100011':  # beq
+        done=False
+        match funct3:
+            case '000':  # beq
                 if rs1_value == rs2_value:
-                    self.pc = self.pc + imm
-            case '1100111':  # bne
+                    self.pc = self.pc + imm_value//4
+                    done=True
+            case '001':  # bne
                 if rs1_value != rs2_value:
-                    self.pc = self.pc + imm
-            case '1101011':  # bge
+                    self.pc = self.pc + imm_value//4
+                    done=True
+            case '101':  # bge
                 if rs1_value >= rs2_value:
-                    self.pc = self.pc + imm
-            case '1101111':  # bgeu
+                    self.pc = self.pc + imm_value//4
+                    done=True
+            case '111':  # bgeu
                 if signed_to_unsigned(rs1_value) >= signed_to_unsigned(rs2_value):
-                    self.pc = self.pc + imm
-            case '1110011':  # bltu
+                    self.pc = self.pc + imm_value//4
+                    done=True
+            case '110':  # bltu
                 if signed_to_unsigned(rs1_value) < signed_to_unsigned(rs2_value):
-                    self.pc = self.pc + imm
-            case '1110111':  # blt
+                    self.pc = self.pc + imm_value//4
+                    done=True
+            case '100':  # blt
                 if rs1_value < rs2_value:
-                    self.pc = self.pc + imm
-    
-    def i_type(self, instruction):
-        opcode = instruction[-7:]
-        imm = instruction[::-1][20:32][::-1]
-        imm = self.bin_to_int(imm, 1)
-        rd = self.bin_to_int(instruction[::-1][7:12][::-1], 0)
-    
-        match opcode:
-            case '1101111':  # jal
-                self.registers[rd] = self.pc + 4
-                self.pc = self.pc + imm
+                    self.pc = self.pc + imm_value//4
+                    done=True
+            
+        if not done:
+            self.pc+=1
 
 
+
+    def utype(self,ins):
+        opcode=ins[-7:]
+        rd=ins[::-1][7:12][::-1]
+        rdint=self.bin_to_int(rd,0)
+        imm=ins[::-1][12:32][::-1]
+        if opcode == "0110111": #lui
+            self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)
+        if opcode == "0010111": #auipc
+            self.registers[rdint]=self.bin_to_int(imm+"0"*12,1)+4*self.pc
         
+        pc+=1
+
     def j_type(self, instruction):
         # opcode=instruction[-7:]
         rd=instruction[-12:-7]
@@ -155,8 +183,8 @@ class RISC_V_Simulator:
         imm[-12]=instruction[-21]
         imm[-20:-12]=instruction[-20:-12]
 
-        self.registers[self.bin_to_int(rd,0)]=self.pc+1
-        self.pc+=int(self.bin_to_int(self.sext(imm, 32))/4) #imm 0 bit is 0
+        self.registers[self.bin_to_int(rd,0)]=4*self.pc+4
+        self.pc+=self.bin_to_int(self.sext(imm, 32))//4 #imm 0 bit is 0
 
     def execute(self,input_file):
         read=open(input_file,'r')
@@ -166,20 +194,24 @@ class RISC_V_Simulator:
             #use match case to match opcodes and run your functions 
             match opcode:
                 case '0110011': #r_type
-                    self.rtype(program)
-                    self.pc+=1
+                    self.rtype(program[self.pc])
+                case '0000011'|'0010011'|'1100111': #i_type
+                    self.i_type(program[self.pc])
                 case '0100011': #s_type
                     self.stype(program[self.pc])
-                case '0110111':
+                case '1100011': #b_type
+                    self.btype(program[self.pc])
+                case '0110111'|'0010111':
                     self.utype(program[self.pc])
-                case '0010111':
-                    self.utype(program[self.pc])
-                
-#incase of btype or any change in pc, reduce the changed pc to pc -1 since it increases by one
-            sim.register_output()
-            self.pc+=1
+                case '1101111':
+                    self.j_type(program[self.pc])
+
+            self.register_output()
+        self.memory_output()
+
 sim = RISC_V_Simulator()
 sim.execute(input_file)
-sim.memory_output()
+
+
 
 
