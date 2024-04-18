@@ -191,30 +191,34 @@ class RISC_V_Simulator:
         self.registers[self.bin_to_int(rd,0)]=4*self.pc+4
         self.pc+=self.bin_to_int(self.sext(imm, 32), 1)//4 #imm 0 bit is 0
 
-    def execute(self,input_file):
-        read=open(input_file,'r')
-        program=[line.strip() for line in read.read().splitlines() if line]
-        while self.pc<len(program): 
+    def execute(self, input_file):
+        read = open(input_file, 'r')
+        program = [line.strip() for line in read.read().splitlines() if line]
+        while self.pc < len(program):
             print(self.pc)
-            if program[self.pc]=='00000000000000000000000001100011':
+            if program[self.pc] == '00000000000000000000000001100011':
                 self.register_output()
                 break
-            opcode=program[self.pc][-7:]
-            #use match case to match opcodes and run your functions 
+            opcode = program[self.pc][-7:]
+            # use match case to match opcodes and run your functions
             match opcode:
-                case '0110011': #r_type
+                case '0110011':  # r_type
                     self.rtype(program[self.pc])
-                case '0000011'|'0010011'|'1100111': #i_type
+                case '0000011' | '0010011' | '1100111':  # i_type
                     self.i_type(program[self.pc])
-                case '0100011': #s_type
+                case '0100011':  # s_type
                     self.stype(program[self.pc])
-                case '1100011': #b_type
+                case '1100011':  # b_type
                     self.btype(program[self.pc])
-                case '0110111'|'0010111':
+                case '0110111' | '0010111':
                     self.utype(program[self.pc])
                 case '1101111':
                     self.j_type(program[self.pc])
-
+    
+            # check if the current instruction is the last one in the program
+            if self.pc == len(program) - 1:
+                break
+    
             self.register_output()
         self.memory_output()
 
