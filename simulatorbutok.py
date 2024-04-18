@@ -86,24 +86,26 @@ class RISC_V_Simulator:
         imm_value = self.bin_to_int(imm, 1)
         rd = instruction[::-1][7:12][::-1]
         rs1 = instruction[::-1][15:20][::-1]
-
-        funct3=instruction[::-1][12:15][::-1]
-
+    
+        funct3 = instruction[::-1][12:15][::-1]
+    
         match opcode:
             case '1100111':  # jalr
-                self.registers[self.bin_to_int(rd,0)] = 4*self.pc + 4 
-                self.pc = (self.registers[6]+imm_value)//4
-
-            case '0010011' : #sltiu
+                self.registers[self.bin_to_int(rd, 0)] = 4 * self.pc + 4
+                self.pc = (self.registers[self.bin_to_int(rs1, 0)] + imm_value * 4) // 4
+    
+            case '0010011':  # sltiu
                 if funct3 == '011':
-                    self.registers[self.bin_to_int(rd, 0)] = 1 if self.bin_to_int(self.int_to_bin(self.registers[self.bin_to_int(rs1, 0)])[2:], 0) < self.bin_to_int(imm,0) else 0
+                    self.registers[self.bin_to_int(rd, 0)] = 1 if self.bin_to_int(self.int_to_bin(self.registers[self.bin_to_int(rs1, 0)])[2:], 0) < self.bin_to_int(imm, 0) else 0
                 if funct3 == '000':
                     self.registers[self.bin_to_int(rd, 0)] = self.registers[self.bin_to_int(rs1, 0)] + imm_value
-                self.pc+=1
+                self.pc += 1
+    
             case "0000011":
-                if funct3 =='010':
-                    self.registers[self.bin_to_int(rd, 0)] = self.memory[(self.registers[self.bin_to_int(rs1, 0)] + imm_value - 16**4)//4] 
-                self.pc+=1
+                if funct3 == '010':
+                    self.registers[self.bin_to_int(rd, 0)] = self.memory[(self.registers[self.bin_to_int(rs1, 0)] + imm_value - 16 ** 4) // 4]
+                self.pc += 1
+
 
     def stype(self,ins):
         imm=ins[::-1][25:32][::-1]+ins[::-1][7:12][::-1]
